@@ -5,16 +5,30 @@ export const useKeyboardControls = () => {
 
   useEffect(() => {
     const handleKeyDown = (e: KeyboardEvent) => {
-      if (['ArrowLeft', 'ArrowRight', 'ArrowUp', 'ArrowDown', ' '].includes(e.key)) {
+      // Преобразуем клавишу в нижний регистр для единообразия
+      const key = e.key.toLowerCase();
+      
+      
+      if (['arrowleft', 'arrowright', 'arrowup', 'arrowdown', ' ', 'w', 'a', 's', 'd', 'shift'].includes(key)) {
         e.preventDefault();
-        setKeys((prev) => ({ ...prev, [e.key]: true }));
+        setKeys((prev) => {
+          const newKeys = { ...prev, [key]: true };
+          return newKeys;
+        });
       }
     };
 
     const handleKeyUp = (e: KeyboardEvent) => {
-      if (['ArrowLeft', 'ArrowRight', 'ArrowUp', 'ArrowDown', ' '].includes(e.key)) {
+      // Преобразуем клавишу в нижний регистр для единообразия
+      const key = e.key.toLowerCase();
+      
+      
+      if (['arrowleft', 'arrowright', 'arrowup', 'arrowdown', ' ', 'w', 'a', 's', 'd', 'shift'].includes(key)) {
         e.preventDefault();
-        setKeys((prev) => ({ ...prev, [e.key]: false }));
+        setKeys((prev) => {
+          const newKeys = { ...prev, [key]: false };
+          return newKeys;
+        });
       }
     };
 
