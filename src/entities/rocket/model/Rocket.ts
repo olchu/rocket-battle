@@ -10,9 +10,9 @@ export class Rocket {
   constructor(x: number, y: number) {
     this.x = x
     this.y = y
-    this.width = 35
-    this.height = 80
-    this.angle = -90
+    this.width = 85
+    this.height = 35
+    this.angle = 0
     this.speed = 2
     this.health = 100
   }
