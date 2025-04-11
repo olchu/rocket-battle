@@ -1,4 +1,4 @@
-import { canvasSize } from "@/shared/constants"
+import { CANVAS_HEIGHT, CANVAS_WIDTH } from "@/shared/constants"
 
 export class Bullet {
   x: number
@@ -24,7 +24,7 @@ export class Bullet {
     this.x += Math.cos(rad) * this.speed
     this.y += Math.sin(rad) * this.speed
 
-    if (this.x < 0 || this.x > canvasSize.width || this.y < 0 || this.y > canvasSize.height) {
+    if (this.x < 0 || this.x > CANVAS_WIDTH || this.y < 0 || this.y > CANVAS_HEIGHT) {
       this.isAlive = false
     }
   }
