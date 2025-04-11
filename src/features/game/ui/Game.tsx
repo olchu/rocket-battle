@@ -1,12 +1,8 @@
 'use client';
 
-import { useState } from 'react';
-import { GameCanvas } from '@/widgets/game-canvas/ui/GameCanvas';
-import { GameState } from '@/entities/game/model/types';
+import GameCanvas from '@/widgets/game-canvas/index';
 
 export const Game = () => {
- 
-
   return (
     <div className="game-container">
       <GameCanvas />
