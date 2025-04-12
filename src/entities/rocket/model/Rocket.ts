@@ -6,6 +6,7 @@ export class Rocket {
   angle: number
   speed: number
   health: number
+  isMovingForward: boolean
 
   constructor(x: number, y: number, initialAngle: number = 0) {
     this.x = x
@@ -15,6 +16,7 @@ export class Rocket {
     this.angle = initialAngle
     this.speed = 2
     this.health = 100
+    this.isMovingForward = false
   }
 
   rotateLeft() {
@@ -26,11 +28,13 @@ export class Rocket {
   }
 
   moveForward() {
+    this.isMovingForward = true
     this.x += Math.cos(this.angle * (Math.PI / 180)) * this.speed
     this.y += Math.sin(this.angle * (Math.PI / 180)) * this.speed
   }
 
   moveBackward() {
+    this.isMovingForward = false
     this.x -= Math.cos(this.angle * (Math.PI / 180)) * this.speed
     this.y -= Math.sin(this.angle * (Math.PI / 180)) * this.speed
   }
@@ -46,5 +50,9 @@ export class Rocket {
 
   takeDamage(amount: number) {
     this.health = Math.max(0, this.health - amount)
+  }
+
+  stopMoving() {
+    this.isMovingForward = false
   }
 }

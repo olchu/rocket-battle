@@ -47,10 +47,13 @@ export function useGameLoop({
 
       if (keys.up) {
         velocity.current = Math.min(maxSpeed, velocity.current + 0.1)
+        r.isMovingForward = true
       } else if (keys.down) {
         velocity.current = Math.max(0, velocity.current - 0.2)
+        r.isMovingForward = false
       } else {
         velocity.current = Math.max(0, velocity.current - 0.05)
+        r.isMovingForward = false
       }
 
       const rad = r.angle * (Math.PI / 180)

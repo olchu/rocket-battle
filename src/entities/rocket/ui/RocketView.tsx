@@ -1,7 +1,7 @@
 'use client'
 import { Sprite, Graphics, Container } from '@pixi/react'
 import { Rocket } from '../model/Rocket'
-import { useCallback } from 'react'
+import { useCallback, useState, useEffect } from 'react'
 import { COLLISION_RADIUS_MULTIPLIER, COLLISION_OFFSET_X } from '@/shared/constants'
 
 interface Props {
@@ -9,7 +9,29 @@ interface Props {
   image: string
 }
 
+const FIRE_ANIMATION_FRAMES = [
+  '/rocket-fire-1.png',
+  '/rocket-fire-2.png',
+  '/rocket-fire-3.png',
+  '/rocket-fire-4.png',
+];
+
+const ANIMATION_SPEED = 100; // миллисекунды между кадрами
+
 export function RocketView({ rocket, image }: Props) {
+  const [fireFrame, setFireFrame] = useState(0);
+
+  // Анимация огня
+  useEffect(() => {
+    if (!rocket.isMovingForward) return;
+
+    const interval = setInterval(() => {
+      setFireFrame((prev) => (prev + 1) % FIRE_ANIMATION_FRAMES.length);
+    }, ANIMATION_SPEED);
+
+    return () => clearInterval(interval);
+  }, [rocket.isMovingForward]);
+
   // Функция для отрисовки отладочной рамки
   const drawDebugBorder = useCallback((g: any) => {
     g.clear();
@@ -30,6 +52,11 @@ export function RocketView({ rocket, image }: Props) {
     g.drawCircle(COLLISION_OFFSET_X, 0, collisionRadius);
   }, [rocket.width, rocket.height]);
 
+  // Определяем какой спрайт использовать
+  const rocketImage = rocket.isMovingForward 
+    ? FIRE_ANIMATION_FRAMES[fireFrame]
+    : image;
+
   return (
     <Container
       x={rocket.x}
@@ -41,7 +68,7 @@ export function RocketView({ rocket, image }: Props) {
       {/* <Graphics draw={drawDebugBorder} /> */}
       
       <Sprite
-        image={image}
+        image={rocketImage}
         width={rocket.width}
         height={rocket.height}
         anchor={0.5}
