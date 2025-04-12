@@ -9,7 +9,7 @@ interface HealthBarProps {
 export const HealthBar = ({ player1Health, player2Health }: HealthBarProps) => {
 
   return (
-    <div className="flex justify-between">
+    <div className="flex justify-between items-center w-full gap-10 mb-3">
       <div className="flex items-center gap-3 flex-1">
         <span className="min-w-20 font-bold">Player 1:</span>
         <div 

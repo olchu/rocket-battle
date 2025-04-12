@@ -72,7 +72,7 @@ export function useGameLoop({
       bullets.current.forEach((b) => {
         if (b.checkCollision(opponent.current)) {
           b.isAlive = false
-          opponent.current.takeDamage(10)
+          opponent.current.takeDamage(1)
         }
       })
 
