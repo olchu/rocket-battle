@@ -38,7 +38,7 @@ export function RocketView({ rocket, image }: Props) {
       anchor={0.5}
     >
       {/* Отладочная рамка */}
-      <Graphics draw={drawDebugBorder} />
+      {/* <Graphics draw={drawDebugBorder} /> */}
       
       <Sprite
         image={image}

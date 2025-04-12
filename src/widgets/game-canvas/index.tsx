@@ -16,8 +16,11 @@ export default function GameCanvas() {
   const [gameOver, setGameOver] = useState(false);
   const [winner, setWinner] = useState<'Player 1' | 'Player 2' | null>(null);
 
-  const rocket1 = useRef(new Rocket(200, 300));
-  const rocket2 = useRef(new Rocket(500, 300));
+  // Создаем первого игрока слева, смотрящего вправо (угол 0 градусов)
+  const rocket1 = useRef(new Rocket(200, CANVAS_HEIGHT / 2, 0));
+
+  // Создаем второго игрока справа, смотрящего влево (угол 180 градусов)
+  const rocket2 = useRef(new Rocket(CANVAS_WIDTH - 200, CANVAS_HEIGHT / 2, 180));
 
   const controls1 = useKeyboardControls('player1');
   const controls2 = useKeyboardControls('player2');
@@ -42,8 +45,10 @@ export default function GameCanvas() {
 
   // Функция для перезапуска игры
   const restartGame = () => {
-    rocket1.current = new Rocket(200, 300);
-    rocket2.current = new Rocket(500, 300);
+    // Сбрасываем позиции и углы поворота
+    rocket1.current = new Rocket(200, CANVAS_HEIGHT / 2, 0);
+    rocket2.current = new Rocket(CANVAS_WIDTH - 200, CANVAS_HEIGHT / 2, 180);
+    
     bullets1.current = [];
     bullets2.current = [];
     velocity1.current = 0;

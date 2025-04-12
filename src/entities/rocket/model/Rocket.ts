@@ -7,12 +7,12 @@ export class Rocket {
   speed: number
   health: number
 
-  constructor(x: number, y: number) {
+  constructor(x: number, y: number, initialAngle: number = 0) {
     this.x = x
     this.y = y
     this.width = 85
     this.height = 35
-    this.angle = 0
+    this.angle = initialAngle
     this.speed = 2
     this.health = 100
   }
