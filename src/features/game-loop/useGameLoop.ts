@@ -17,6 +17,8 @@ type UseGameLoopParams = {
   }>
   spacePressed: React.MutableRefObject<boolean>
   forceUpdate: React.Dispatch<React.SetStateAction<number>>
+  enabled?: boolean
+  onHit?: () => void
 }
 
 export function useGameLoop({
@@ -27,11 +29,15 @@ export function useGameLoop({
   controls,
   spacePressed,
   forceUpdate,
+  enabled = true,
+  onHit,
 }: UseGameLoopParams) {
   useEffect(() => {
     let frame: number
 
     const loop = () => {
+      if (!enabled) return;
+
       const r = rocket.current
       const keys = controls.current
       const maxSpeed = 5
@@ -73,15 +79,16 @@ export function useGameLoop({
         if (b.checkCollision(opponent.current)) {
           b.isAlive = false
           opponent.current.takeDamage(1)
+          onHit?.()
         }
       })
 
-      forceUpdate((n) => n + 1) // 🔥 ключевая строка
+      forceUpdate((n) => n + 1)
 
       frame = requestAnimationFrame(loop)
     }
 
     frame = requestAnimationFrame(loop)
     return () => cancelAnimationFrame(frame)
-  }, [rocket, opponent, bullets, velocity, controls, spacePressed, forceUpdate])
+  }, [rocket, opponent, bullets, velocity, controls, spacePressed, forceUpdate, enabled, onHit])
 }
