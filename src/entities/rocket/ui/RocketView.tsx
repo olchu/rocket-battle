@@ -23,7 +23,11 @@ export function RocketView({ rocket, image }: Props) {
 
   // Анимация огня
   useEffect(() => {
-    if (!rocket.isMovingForward) return;
+    // Сбрасываем на первый кадр при остановке или старте движения
+    if (!rocket.isMovingForward) {
+      setFireFrame(0);
+      return;
+    }
 
     const interval = setInterval(() => {
       setFireFrame((prev) => (prev + 1) % FIRE_ANIMATION_FRAMES.length);
