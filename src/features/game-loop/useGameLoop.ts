@@ -65,8 +65,8 @@ export function useGameLoop({
 
       if (keys.fire && !spacePressed.current) {
         spacePressed.current = true
-        const bx = r.x + Math.cos(rad) * r.width / 2
-        const by = r.y + Math.sin(rad) * r.height / 2
+        const bx = r.x + Math.cos(rad) * (r.width / 2)
+        const by = r.y + Math.sin(rad) * (r.width / 2)
         bullets.current.push(new Bullet(bx, by, r.angle))
       }
 

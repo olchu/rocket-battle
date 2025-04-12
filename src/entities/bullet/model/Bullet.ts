@@ -1,12 +1,11 @@
-import { CANVAS_HEIGHT, CANVAS_WIDTH, COLLISION_RADIUS_MULTIPLIER, COLLISION_OFFSET_X } from "@/shared/constants"
+import { CANVAS_HEIGHT, CANVAS_WIDTH } from "@/shared/constants"
 
 export class Bullet {
   x: number
   y: number
   speed: number
   angle: number
-  width: number
-  height: number
+  radius: number
   isAlive: boolean
 
   constructor(x: number, y: number, angle: number) {
@@ -14,8 +13,7 @@ export class Bullet {
     this.y = y
     this.angle = angle
     this.speed = 8
-    this.width = 8
-    this.height = 4
+    this.radius = 3
     this.isAlive = true
   }
 
@@ -31,26 +29,18 @@ export class Bullet {
 
   checkCollision(target: { x: number; y: number; width: number; height: number; angle: number }): boolean {
     // Получаем центры объектов
-    const bulletCenterX = this.x + this.width / 2;
-    const bulletCenterY = this.y + this.height / 2;
+    const targetCenterX = target.x;
+    const targetCenterY = target.y;
     
-    // Вычисляем центр области коллизии с учетом поворота ракеты
-    const rad = target.angle * Math.PI / 180;
-    const offsetX = Math.cos(rad) * COLLISION_OFFSET_X;
-    const offsetY = Math.sin(rad) * COLLISION_OFFSET_X;
-    const targetCenterX = target.x + offsetX;
-    const targetCenterY = target.y + offsetY;
-
     // Вычисляем расстояние между центрами
-    const dx = bulletCenterX - targetCenterX;
-    const dy = bulletCenterY - targetCenterY;
+    const dx = this.x - targetCenterX;
+    const dy = this.y - targetCenterY;
     const distance = Math.sqrt(dx * dx + dy * dy);
 
     // Используем фиксированный радиус для коллизии
-    const collisionRadius = Math.max(target.width, target.height) * COLLISION_RADIUS_MULTIPLIER;
-    const bulletRadius = Math.max(this.width, this.height) / 2;
+    const collisionRadius = Math.max(target.width, target.height) * 0.3;
 
     // Проверяем столкновение по сумме радиусов
-    return distance < (collisionRadius + bulletRadius);
+    return distance < (collisionRadius + this.radius);
   }
 }

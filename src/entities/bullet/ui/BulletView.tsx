@@ -12,7 +12,7 @@ export function BulletView({ bullet }: Props) {
       draw={(g) => {
         g.clear()
         g.beginFill(0xffff00)
-        g.drawRect(bullet.x, bullet.y, bullet.width, bullet.height)
+        g.drawCircle(bullet.x, bullet.y, 3)
         g.endFill()
       }}
     />
