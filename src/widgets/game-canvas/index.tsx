@@ -48,8 +48,11 @@ export default function GameCanvas() {
   });
 
   return (
-    <div>
-      <HealthBar health={rocket1.current.health} />
+    <div className="flex flex-col items-center">
+      <HealthBar 
+        player1Health={rocket1.current.health} 
+        player2Health={rocket2.current.health} 
+      />
       <Stage
         width={CANVAS_WIDTH}
         height={CANVAS_HEIGHT}
