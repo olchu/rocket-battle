@@ -41,19 +41,19 @@ export function useGameLoop({
       const keys = controls.current
       const w = window.innerWidth
       const h = window.innerHeight
-      const maxSpeed = 5
+      const maxSpeed = 3
 
       if (keys.left) r.rotateLeft()
       if (keys.right) r.rotateRight()
 
       if (keys.up) {
-        velocity.current = Math.min(maxSpeed, velocity.current + 0.1)
+        velocity.current = Math.min(maxSpeed, velocity.current + 0.06)
         r.isMovingForward = true
       } else if (keys.down) {
-        velocity.current = Math.max(0, velocity.current - 0.2)
+        velocity.current = Math.max(0, velocity.current - 0.12)
         r.isMovingForward = false
       } else {
-        velocity.current = Math.max(0, velocity.current - 0.05)
+        velocity.current = Math.max(0, velocity.current - 0.03)
         r.isMovingForward = false
       }
 

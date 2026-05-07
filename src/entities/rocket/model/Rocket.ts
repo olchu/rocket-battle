@@ -20,11 +20,11 @@ export class Rocket {
   }
 
   rotateLeft() {
-    this.angle -= 5
+    this.angle -= 1.5
   }
 
   rotateRight() {
-    this.angle += 5
+    this.angle += 1.5
   }
 
   moveForward() {
