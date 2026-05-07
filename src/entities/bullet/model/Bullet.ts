@@ -15,10 +15,10 @@ export class Bullet {
     this.isAlive = true
   }
 
-  update(boundsWidth: number, boundsHeight: number) {
+  update(boundsWidth: number, boundsHeight: number, scale = 1) {
     const rad = this.angle * (Math.PI / 180)
-    this.x += Math.cos(rad) * this.speed
-    this.y += Math.sin(rad) * this.speed
+    this.x += Math.cos(rad) * this.speed * scale
+    this.y += Math.sin(rad) * this.speed * scale
 
     if (this.x < 0 || this.x > boundsWidth || this.y < 0 || this.y > boundsHeight) {
       this.isAlive = false

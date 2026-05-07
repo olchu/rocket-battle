@@ -33,9 +33,14 @@ export function useGameLoop({
 }: UseGameLoopParams) {
   useEffect(() => {
     let frame: number
+    let lastTime: number | null = null
 
-    const loop = () => {
+    const loop = (timestamp: number) => {
       if (!enabled) return;
+
+      const dt = lastTime !== null ? Math.min(timestamp - lastTime, 50) : 16.667
+      lastTime = timestamp
+      const scale = dt / 16.667
 
       const r = rocket.current
       const keys = controls.current
@@ -43,23 +48,23 @@ export function useGameLoop({
       const h = window.innerHeight
       const maxSpeed = 3
 
-      if (keys.left) r.rotateLeft()
-      if (keys.right) r.rotateRight()
+      if (keys.left) r.angle -= 1.5 * scale
+      if (keys.right) r.angle += 1.5 * scale
 
       if (keys.up) {
-        velocity.current = Math.min(maxSpeed, velocity.current + 0.06)
+        velocity.current = Math.min(maxSpeed, velocity.current + 0.06 * scale)
         r.isMovingForward = true
       } else if (keys.down) {
-        velocity.current = Math.max(0, velocity.current - 0.12)
+        velocity.current = Math.max(0, velocity.current - 0.12 * scale)
         r.isMovingForward = false
       } else {
-        velocity.current = Math.max(0, velocity.current - 0.03)
+        velocity.current = Math.max(0, velocity.current - 0.03 * scale)
         r.isMovingForward = false
       }
 
       const rad = r.angle * (Math.PI / 180)
-      r.x += Math.cos(rad) * velocity.current
-      r.y += Math.sin(rad) * velocity.current
+      r.x += Math.cos(rad) * velocity.current * scale
+      r.y += Math.sin(rad) * velocity.current * scale
 
       // wrap
       if (r.x < 0) r.x = w
@@ -76,7 +81,7 @@ export function useGameLoop({
 
       if (!keys.fire) spacePressed.current = false
 
-      bullets.current.forEach((b) => b.update(w, h))
+      bullets.current.forEach((b) => b.update(w, h, scale))
       bullets.current = bullets.current.filter((b) => b.isAlive)
 
       bullets.current.forEach((b) => {

@@ -73,27 +73,32 @@ export function useSecondPlayerControls({ width, height, speed, canvasWidth, can
 
   useEffect(() => {
     let frame: number;
+    let lastTime: number | null = null;
     const maxSpeed = 3;
     const bulletSpeed = 8;
 
-    const loop = () => {
+    const loop = (timestamp: number) => {
+      const dt = lastTime !== null ? Math.min(timestamp - lastTime, 50) : 16.667;
+      lastTime = timestamp;
+      const scale = dt / 16.667;
+
       const keys = keysRef.current;
       const pos = posRef.current;
 
-      if (keys.left) pos.angle -= 1.5;
-      if (keys.right) pos.angle += 1.5;
+      if (keys.left) pos.angle -= 1.5 * scale;
+      if (keys.right) pos.angle += 1.5 * scale;
 
       if (keys.up) {
-        velocityRef.current = Math.min(maxSpeed, velocityRef.current + 0.06);
+        velocityRef.current = Math.min(maxSpeed, velocityRef.current + 0.06 * scale);
       } else if (keys.down) {
-        velocityRef.current = Math.max(0, velocityRef.current - 0.12);
+        velocityRef.current = Math.max(0, velocityRef.current - 0.12 * scale);
       } else {
-        velocityRef.current = Math.max(0, velocityRef.current - 0.03);
+        velocityRef.current = Math.max(0, velocityRef.current - 0.03 * scale);
       }
 
       const rad = pos.angle * (Math.PI / 180);
-      pos.x += Math.cos(rad) * velocityRef.current;
-      pos.y += Math.sin(rad) * velocityRef.current;
+      pos.x += Math.cos(rad) * velocityRef.current * scale;
+      pos.y += Math.sin(rad) * velocityRef.current * scale;
 
       if (pos.x < 0) pos.x = canvasWidth;
       if (pos.x > canvasWidth) pos.x = 0;
@@ -116,8 +121,8 @@ export function useSecondPlayerControls({ width, height, speed, canvasWidth, can
 
       bulletsRef.current.forEach((b) => {
         const brad = b.angle * (Math.PI / 180);
-        b.x += Math.cos(brad) * b.speed;
-        b.y += Math.sin(brad) * b.speed;
+        b.x += Math.cos(brad) * b.speed * scale;
+        b.y += Math.sin(brad) * b.speed * scale;
         if (b.x < 0 || b.x > canvasWidth || b.y < 0 || b.y > canvasHeight) {
           b.isAlive = false;
         }

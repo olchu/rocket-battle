@@ -4,6 +4,8 @@
 
 A local multiplayer space shooter built with Next.js and PixiJS. Two players share the same keyboard and battle it out in space — dodge, aim, and destroy your opponent's rocket.
 
+You can play the game and see how it works here: [https://rocket-battle.vercel.app](https://rocket-battle.vercel.app)
+
 ---
 
 ![Main Menu](docs/preview.png)

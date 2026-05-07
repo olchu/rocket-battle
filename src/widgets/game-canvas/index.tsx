@@ -111,12 +111,16 @@ export default function GameCanvas() {
 
   useEffect(() => {
     let frame: number;
-    const loop = () => {
+    let lastTime: number | null = null;
+    const loop = (timestamp: number) => {
+      const dt = lastTime !== null ? Math.min(timestamp - lastTime, 50) : 16.667;
+      lastTime = timestamp;
+      const scale = dt / 16.667;
       const w = window.innerWidth;
       const h = window.innerHeight;
       planets.current.forEach((p) => {
-        p.x += p.vx;
-        p.y += p.vy;
+        p.x += p.vx * scale;
+        p.y += p.vy * scale;
         const half = p.scale * 700;
         if (p.x > w + half || p.x < -half || p.y > h + half || p.y < -half) {
           spawnOffScreen(p, w, h);
