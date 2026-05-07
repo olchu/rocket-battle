@@ -110,30 +110,6 @@ export default function GameCanvas() {
   }, []);
 
   useEffect(() => {
-    let frame: number;
-    let lastTime: number | null = null;
-    const loop = (timestamp: number) => {
-      const dt = lastTime !== null ? Math.min(timestamp - lastTime, 50) : 16.667;
-      lastTime = timestamp;
-      const scale = dt / 16.667;
-      const w = window.innerWidth;
-      const h = window.innerHeight;
-      planets.current.forEach((p) => {
-        p.x += p.vx * scale;
-        p.y += p.vy * scale;
-        const half = p.scale * 700;
-        if (p.x > w + half || p.x < -half || p.y > h + half || p.y < -half) {
-          spawnOffScreen(p, w, h);
-        }
-      });
-      forceUpdate((n) => n + 1);
-      frame = requestAnimationFrame(loop);
-    };
-    frame = requestAnimationFrame(loop);
-    return () => cancelAnimationFrame(frame);
-  }, []);
-
-  useEffect(() => {
     startCountdown();
     return () => countdownTimers.current.forEach(clearTimeout);
   }, [startCountdown]);
@@ -161,31 +137,62 @@ export default function GameCanvas() {
     startCountdown();
   };
 
-  const gameActive = !gameOver && countdown === null;
+  const gameActiveRef = useRef(false);
+  gameActiveRef.current = !gameOver && countdown === null;
 
-  useGameLoop({
+  const tick1 = useGameLoop({
     rocket: rocket1,
     opponent: rocket2,
     bullets: bullets1,
     velocity: velocity1,
     controls: controls1,
     spacePressed: spacePressed1,
-    forceUpdate,
-    enabled: gameActive,
     onHit: checkHealth,
   });
 
-  useGameLoop({
+  const tick2 = useGameLoop({
     rocket: rocket2,
     opponent: rocket1,
     bullets: bullets2,
     velocity: velocity2,
     controls: controls2,
     spacePressed: spacePressed2,
-    forceUpdate,
-    enabled: gameActive,
     onHit: checkHealth,
   });
+
+  useEffect(() => {
+    let frame: number;
+    let lastTime: number | null = null;
+
+    const loop = (timestamp: number) => {
+      const dt = lastTime !== null ? Math.min(timestamp - lastTime, 50) : 16.667;
+      lastTime = timestamp;
+      const scale = dt / 16.667;
+
+      const w = window.innerWidth;
+      const h = window.innerHeight;
+
+      planets.current.forEach((p) => {
+        p.x += p.vx * scale;
+        p.y += p.vy * scale;
+        const half = p.scale * 700;
+        if (p.x > w + half || p.x < -half || p.y > h + half || p.y < -half) {
+          spawnOffScreen(p, w, h);
+        }
+      });
+
+      if (gameActiveRef.current) {
+        tick1(scale);
+        tick2(scale);
+      }
+
+      forceUpdate((n) => n + 1);
+      frame = requestAnimationFrame(loop);
+    };
+
+    frame = requestAnimationFrame(loop);
+    return () => cancelAnimationFrame(frame);
+  }, [tick1, tick2]);
 
   return (
     <div className="fixed inset-0">

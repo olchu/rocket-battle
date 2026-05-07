@@ -104,7 +104,6 @@ export default function Home() {
           >
             ★ Press Start ★
           </Link>
-          <p className="text-xs tracking-[0.4em] uppercase" style={{ color: '#f0c040' }}>Best of 5</p>
         </div>
       </div>
     </main>

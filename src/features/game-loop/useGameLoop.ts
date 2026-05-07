@@ -1,4 +1,4 @@
-import { useEffect } from 'react'
+import { useCallback, useRef } from 'react'
 import { Rocket } from '@/entities/rocket/model/Rocket'
 import { Bullet } from '@/entities/bullet/model/Bullet'
 
@@ -15,8 +15,6 @@ type UseGameLoopParams = {
     fire: boolean
   }>
   spacePressed: React.MutableRefObject<boolean>
-  forceUpdate: React.Dispatch<React.SetStateAction<number>>
-  enabled?: boolean
   onHit?: () => void
 }
 
@@ -27,21 +25,13 @@ export function useGameLoop({
   velocity,
   controls,
   spacePressed,
-  forceUpdate,
-  enabled = true,
   onHit,
 }: UseGameLoopParams) {
-  useEffect(() => {
-    let frame: number
-    let lastTime: number | null = null
+  const onHitRef = useRef(onHit)
+  onHitRef.current = onHit
 
-    const loop = (timestamp: number) => {
-      if (!enabled) return;
-
-      const dt = lastTime !== null ? Math.min(timestamp - lastTime, 50) : 16.667
-      lastTime = timestamp
-      const scale = dt / 16.667
-
+  return useCallback(
+    (scale: number) => {
       const r = rocket.current
       const keys = controls.current
       const w = window.innerWidth
@@ -66,7 +56,6 @@ export function useGameLoop({
       r.x += Math.cos(rad) * velocity.current * scale
       r.y += Math.sin(rad) * velocity.current * scale
 
-      // wrap
       if (r.x < 0) r.x = w
       if (r.x > w) r.x = 0
       if (r.y < 0) r.y = h
@@ -88,16 +77,10 @@ export function useGameLoop({
         if (b.checkCollision(opponent.current)) {
           b.isAlive = false
           opponent.current.takeDamage(1)
-          onHit?.()
+          onHitRef.current?.()
         }
       })
-
-      forceUpdate((n) => n + 1)
-
-      frame = requestAnimationFrame(loop)
-    }
-
-    frame = requestAnimationFrame(loop)
-    return () => cancelAnimationFrame(frame)
-  }, [rocket, opponent, bullets, velocity, controls, spacePressed, forceUpdate, enabled, onHit])
+    },
+    [rocket, opponent, bullets, velocity, controls, spacePressed]
+  )
 }
