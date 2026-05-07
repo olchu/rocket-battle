@@ -23,6 +23,8 @@ export default function GameCanvas() {
   const [gameOver, setGameOver] = useState(false);
   const [winner, setWinner] = useState<'Player 1' | 'Player 2' | null>(null);
   const [windowSize, setWindowSize] = useState({ width: CANVAS_WIDTH, height: CANVAS_HEIGHT });
+  const [countdown, setCountdown] = useState<number | 'GO!' | null>(null);
+  const countdownTimers = useRef<ReturnType<typeof setTimeout>[]>([]);
 
   const rocket1 = useRef(new Rocket(CANVAS_WIDTH / 2 - START_GAP, CANVAS_HEIGHT / 2, 180));
   const rocket2 = useRef(new Rocket(CANVAS_WIDTH / 2 + START_GAP, CANVAS_HEIGHT / 2, 0));
@@ -36,6 +38,17 @@ export default function GameCanvas() {
   const velocity2 = useRef(0);
   const spacePressed1 = useRef(false);
   const spacePressed2 = useRef(false);
+
+  const startCountdown = useCallback(() => {
+    countdownTimers.current.forEach(clearTimeout);
+    setCountdown(3);
+    countdownTimers.current = [
+      setTimeout(() => setCountdown(2), 1000),
+      setTimeout(() => setCountdown(1), 2000),
+      setTimeout(() => setCountdown('GO!'), 3000),
+      setTimeout(() => setCountdown(null), 3800),
+    ];
+  }, []);
 
   useEffect(() => {
     const update = () => {
@@ -51,6 +64,10 @@ export default function GameCanvas() {
     return () => window.removeEventListener('resize', update);
   }, []);
 
+  useEffect(() => {
+    startCountdown();
+    return () => countdownTimers.current.forEach(clearTimeout);
+  }, [startCountdown]);
 
   const checkHealth = useCallback(() => {
     if (rocket1.current.health <= 0) {
@@ -72,7 +89,10 @@ export default function GameCanvas() {
     velocity2.current = 0;
     setGameOver(false);
     setWinner(null);
+    startCountdown();
   };
+
+  const gameActive = !gameOver && countdown === null;
 
   useGameLoop({
     rocket: rocket1,
@@ -82,7 +102,7 @@ export default function GameCanvas() {
     controls: controls1,
     spacePressed: spacePressed1,
     forceUpdate,
-    enabled: !gameOver,
+    enabled: gameActive,
     onHit: checkHealth,
   });
 
@@ -94,7 +114,7 @@ export default function GameCanvas() {
     controls: controls2,
     spacePressed: spacePressed2,
     forceUpdate,
-    enabled: !gameOver,
+    enabled: gameActive,
     onHit: checkHealth,
   });
 
@@ -129,6 +149,25 @@ export default function GameCanvas() {
           player2Health={rocket2.current.health}
         />
       </div>
+
+      {countdown !== null && (
+        <div className="absolute inset-0 flex items-center justify-center z-30 pointer-events-none">
+          <span
+            key={String(countdown)}
+            className={countdown === 'GO!' ? 'countdown-go' : 'countdown-number'}
+            style={{
+              fontSize: countdown === 'GO!' ? '7rem' : '14rem',
+              fontWeight: '900',
+              color: 'white',
+              textShadow: '0 0 60px rgba(255,255,255,0.5), 0 4px 30px rgba(0,0,0,0.9)',
+              lineHeight: 1,
+              userSelect: 'none',
+            }}
+          >
+            {countdown}
+          </span>
+        </div>
+      )}
 
       {gameOver && (
         <div className="absolute inset-0 flex items-center justify-center z-20">
