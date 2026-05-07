@@ -4,85 +4,108 @@ import Image from 'next/image';
 export default function Home() {
   return (
     <main
-      className="min-h-screen flex flex-col items-center justify-center px-6 py-12 text-white overflow-hidden relative"
-      style={{ backgroundImage: 'url(/space.png)', backgroundSize: 'cover', backgroundPosition: 'center' }}
+      className="min-h-screen flex flex-col items-center justify-center px-6 py-10 text-white overflow-hidden relative"
+      style={{ backgroundImage: 'url(/bg.png)', backgroundSize: 'cover', backgroundPosition: 'center' }}
     >
-      <div className="absolute inset-0 bg-black/50" />
+      {/* Corner decorations */}
+      <div className="absolute top-0 left-0 pointer-events-none" style={{ transform: 'translate(-25%, -20%)' }}>
+        <Image src="/planet-blue.png" alt="" width={260} height={260} />
+      </div>
+      <div className="absolute top-0 right-0 pointer-events-none" style={{ transform: 'translate(10%, -10%) rotate(15deg)' }}>
+        <Image src="/astronaut.png" alt="" width={180} height={180} />
+      </div>
+      <div className="absolute bottom-0 left-0 pointer-events-none" style={{ transform: 'translate(-30%, 30%)' }}>
+        <Image src="/planet-purple.png" alt="" width={300} height={300} />
+      </div>
+      <div className="absolute bottom-0 right-0 pointer-events-none" style={{ transform: 'translate(25%, 25%)' }}>
+        <Image src="/planet-orange.png" alt="" width={240} height={240} />
+      </div>
 
-      <div className="max-w-4xl w-full flex flex-col items-center gap-8 relative z-10">
+      {/* Main content */}
+      <div className="max-w-4xl w-full flex flex-col items-center gap-6 relative z-10">
 
         {/* Title */}
         <div className="text-center">
-          <h1 className="text-7xl font-black tracking-widest uppercase leading-none">
-            <span style={{ color: '#ff4444', textShadow: '0 0 40px rgba(255,68,68,0.8)' }}>ROCKET </span>
-            <span style={{ textShadow: '0 0 40px rgba(255,255,255,0.4)' }}>BATTLE</span>
+          <h1
+            className="text-7xl font-black tracking-widest uppercase leading-none"
+            style={{ textShadow: '2px 2px 0 #000, 0 0 60px rgba(255,255,255,0.15)' }}
+          >
+            <span style={{ color: '#ff4444', textShadow: '2px 2px 0 #000, 0 0 40px rgba(255,68,68,0.7)' }}>ROCKET </span>
+            <span>BATTLE</span>
           </h1>
-          <p className="mt-3 font-bold tracking-[0.3em] uppercase text-sm" style={{ color: '#f0c040' }}>
+          <p className="mt-2 font-bold tracking-[0.3em] uppercase text-sm" style={{ color: '#f0c040' }}>
             Two Players &bull; One Screen &bull; No Mercy
           </p>
         </div>
 
-        {/* VS */}
-        <div className="flex items-center justify-center gap-16 w-full">
-          <div style={{
-            filter: 'hue-rotate(340deg) saturate(3) drop-shadow(0 0 18px #ff4444)',
-            transform: 'rotate(-12deg)',
-          }}>
-            <Image src="/rocket.png" alt="Player 1" width={110} height={110} />
+        {/* Rockets VS */}
+        <div className="flex items-center justify-center w-full" style={{ gap: '0' }}>
+          <div className="flex-1 flex justify-end pr-4">
+            <Image
+              src="/rocket-red.png"
+              alt="Player 1"
+              width={220}
+              height={140}
+              style={{ transform: 'rotate(-8deg)', filter: 'drop-shadow(0 0 20px rgba(255,80,0,0.7))' }}
+            />
           </div>
-          <span
-            className="text-8xl font-black"
-            style={{ color: '#ff3377', textShadow: '0 0 40px rgba(255,51,119,0.9), 0 0 80px rgba(255,51,119,0.4)' }}
-          >
-            VS
-          </span>
-          <div style={{
-            filter: 'hue-rotate(200deg) saturate(2) drop-shadow(0 0 18px #4488ff)',
-            transform: 'rotate(12deg) scaleX(-1)',
-          }}>
-            <Image src="/rocket.png" alt="Player 2" width={110} height={110} />
+          <div className="flex-shrink-0">
+            <Image src="/vs.png" alt="VS" width={160} height={110} style={{ filter: 'drop-shadow(0 0 20px rgba(255,100,100,0.5))' }} />
+          </div>
+          <div className="flex-1 flex justify-start pl-4">
+            <Image
+              src="/rocket-blue.png"
+              alt="Player 2"
+              width={220}
+              height={140}
+              style={{ transform: 'rotate(8deg)', filter: 'drop-shadow(0 0 20px rgba(0,150,255,0.7))' }}
+            />
           </div>
         </div>
 
         {/* Controls */}
         <div className="w-full grid grid-cols-2 gap-4">
-          <div className="rounded-xl p-6 flex flex-col gap-3" style={{
-            background: 'rgba(255,68,68,0.07)',
-            border: '1px solid rgba(255,68,68,0.45)',
-            boxShadow: '0 0 28px rgba(255,68,68,0.2)',
+          <div className="rounded-xl p-5 flex flex-col gap-3" style={{
+            background: 'rgba(0,0,0,0.5)',
+            border: '1px solid rgba(255,68,68,0.6)',
+            boxShadow: '0 0 24px rgba(255,68,68,0.25), inset 0 0 20px rgba(255,68,68,0.05)',
           }}>
-            <h2 className="font-black uppercase tracking-widest text-sm" style={{ color: '#ff5555' }}>
-              Player 1 ★
+            <h2 className="font-black uppercase tracking-widest text-sm flex items-center gap-2" style={{ color: '#ff5555' }}>
+              Player 1 <span style={{ color: '#ff5555' }}>★</span>
             </h2>
             <ControlRow label="MOVE" keys={['W', 'A', 'S', 'D']} />
             <ControlRow label="FIRE" keys={['F']} />
           </div>
 
-          <div className="rounded-xl p-6 flex flex-col gap-3" style={{
-            background: 'rgba(68,136,255,0.07)',
-            border: '1px solid rgba(68,136,255,0.45)',
-            boxShadow: '0 0 28px rgba(68,136,255,0.2)',
+          <div className="rounded-xl p-5 flex flex-col gap-3" style={{
+            background: 'rgba(0,0,0,0.5)',
+            border: '1px solid rgba(68,136,255,0.6)',
+            boxShadow: '0 0 24px rgba(68,136,255,0.25), inset 0 0 20px rgba(68,136,255,0.05)',
           }}>
-            <h2 className="font-black uppercase tracking-widest text-sm" style={{ color: '#55aaff' }}>
-              Player 2 ★
+            <h2 className="font-black uppercase tracking-widest text-sm flex items-center gap-2" style={{ color: '#55aaff' }}>
+              Player 2 <span style={{ color: '#55aaff' }}>★</span>
             </h2>
             <ControlRow label="MOVE" keys={['↑', '←', '↓', '→']} />
             <ControlRow label="FIRE" keys={['Space']} />
           </div>
         </div>
 
-        {/* Play button */}
-        <Link
-          href="/offlinegame"
-          className="font-black text-xl tracking-[0.25em] uppercase py-4 px-20 rounded-xl transition-all duration-150 hover:scale-105 active:scale-95"
-          style={{
-            background: 'linear-gradient(135deg, #22c55e 0%, #16a34a 100%)',
-            boxShadow: '0 0 40px rgba(34,197,94,0.6), 0 0 80px rgba(34,197,94,0.25)',
-            textShadow: '0 1px 4px rgba(0,0,0,0.5)',
-          }}
-        >
-          ★ Press Start ★
-        </Link>
+        {/* Press Start */}
+        <div className="flex flex-col items-center gap-2">
+          <Link
+            href="/offlinegame"
+            className="font-black text-2xl tracking-[0.2em] uppercase py-4 px-20 rounded-xl transition-all duration-150 hover:scale-105 active:scale-95"
+            style={{
+              background: 'linear-gradient(180deg, #2ecc5a 0%, #1a9e3f 100%)',
+              border: '2px solid rgba(100,255,140,0.4)',
+              boxShadow: '0 0 40px rgba(34,197,94,0.6), 0 0 80px rgba(34,197,94,0.2), inset 0 1px 0 rgba(255,255,255,0.2)',
+              textShadow: '0 1px 4px rgba(0,0,0,0.6)',
+            }}
+          >
+            ★ Press Start ★
+          </Link>
+          <p className="text-xs tracking-[0.4em] uppercase" style={{ color: '#f0c040' }}>Best of 5</p>
+        </div>
       </div>
     </main>
   );
@@ -98,9 +121,9 @@ function ControlRow({ label, keys }: { label: string; keys: string[] }) {
             key={k}
             className="px-2.5 py-1 rounded font-mono text-white text-xs font-bold"
             style={{
-              background: 'rgba(255,255,255,0.1)',
-              border: '1px solid rgba(255,255,255,0.25)',
-              boxShadow: '0 2px 0 rgba(0,0,0,0.6)',
+              background: 'rgba(255,255,255,0.12)',
+              border: '1px solid rgba(255,255,255,0.3)',
+              boxShadow: '0 2px 0 rgba(0,0,0,0.7)',
             }}
           >
             {k}
