@@ -1,5 +1,3 @@
-import { CANVAS_HEIGHT, CANVAS_WIDTH } from "@/shared/constants"
-
 export class Bullet {
   x: number
   y: number
@@ -17,12 +15,12 @@ export class Bullet {
     this.isAlive = true
   }
 
-  update() {
+  update(boundsWidth: number, boundsHeight: number) {
     const rad = this.angle * (Math.PI / 180)
     this.x += Math.cos(rad) * this.speed
     this.y += Math.sin(rad) * this.speed
 
-    if (this.x < 0 || this.x > CANVAS_WIDTH || this.y < 0 || this.y > CANVAS_HEIGHT) {
+    if (this.x < 0 || this.x > boundsWidth || this.y < 0 || this.y > boundsHeight) {
       this.isAlive = false
     }
   }

@@ -76,7 +76,7 @@ export function useGameLoop({
 
       if (!keys.fire) spacePressed.current = false
 
-      bullets.current.forEach((b) => b.update())
+      bullets.current.forEach((b) => b.update(w, h))
       bullets.current = bullets.current.filter((b) => b.isAlive)
 
       bullets.current.forEach((b) => {
