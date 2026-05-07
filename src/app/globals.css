@@ -34,3 +34,21 @@ body {
 .countdown-go {
   animation: goPop 0.8s ease-out forwards;
 }
+
+@keyframes float {
+  0%, 100% { transform: translateY(0px) rotate(15deg); }
+  50%       { transform: translateY(-14px) rotate(12deg); }
+}
+
+.astronaut-float {
+  animation: float 6s ease-in-out infinite;
+}
+
+@keyframes floatPlanet {
+  0%, 100% { transform: translateY(0px); }
+  50%       { transform: translateY(-12px); }
+}
+
+.planet-float-1 { animation: floatPlanet 10s ease-in-out infinite; }
+.planet-float-2 { animation: floatPlanet 12s ease-in-out infinite 2s; }
+.planet-float-3 { animation: floatPlanet 11s ease-in-out infinite 1s; }

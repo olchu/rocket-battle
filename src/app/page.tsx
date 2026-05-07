@@ -9,16 +9,16 @@ export default function Home() {
     >
       {/* Corner decorations */}
       <div className="absolute top-0 left-0 pointer-events-none" style={{ transform: 'translate(-25%, -20%)' }}>
-        <Image src="/planet-blue.png" alt="" width={260} height={260} />
+        <Image src="/planet-blue.png" alt="" width={260} height={260} className="planet-float-1" />
       </div>
-      <div className="absolute top-0 right-0 pointer-events-none" style={{ transform: 'translate(10%, -10%) rotate(15deg)' }}>
-        <Image src="/astronaut.png" alt="" width={180} height={180} />
+      <div className="absolute top-0 right-0 pointer-events-none" style={{ transform: 'translate(-8%, 30%)' }}>
+        <Image src="/astronaut.png" alt="" width={240} height={240} className="astronaut-float" />
       </div>
-      <div className="absolute bottom-0 left-0 pointer-events-none" style={{ transform: 'translate(-30%, 30%)' }}>
-        <Image src="/planet-purple.png" alt="" width={300} height={300} />
+      <div className="absolute bottom-0 left-0 pointer-events-none" style={{ transform: 'translate(-15%, 20%)' }}>
+        <Image src="/planet-purple.png" alt="" width={420} height={420} className="planet-float-2" />
       </div>
-      <div className="absolute bottom-0 right-0 pointer-events-none" style={{ transform: 'translate(25%, 25%)' }}>
-        <Image src="/planet-orange.png" alt="" width={240} height={240} />
+      <div className="absolute bottom-0 right-0 pointer-events-none" style={{ transform: 'translate(0%, 0%)' }}>
+        <Image src="/planet-orange.png" alt="" width={200} height={200} className="planet-float-3" />
       </div>
 
       {/* Main content */}
@@ -50,7 +50,7 @@ export default function Home() {
             />
           </div>
           <div className="flex-shrink-0">
-            <Image src="/vs.png" alt="VS" width={160} height={110} style={{ filter: 'drop-shadow(0 0 20px rgba(255,100,100,0.5))' }} />
+            <Image src="/vs.png" alt="VS" width={300} height={206} style={{ filter: 'drop-shadow(0 0 20px rgba(255,100,100,0.5))' }} />
           </div>
           <div className="flex-1 flex justify-start pl-4">
             <Image
