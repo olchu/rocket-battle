@@ -26,7 +26,6 @@ export default function GameCanvas() {
 
   const rocket1 = useRef(new Rocket(CANVAS_WIDTH / 2 - START_GAP, CANVAS_HEIGHT / 2, 180));
   const rocket2 = useRef(new Rocket(CANVAS_WIDTH / 2 + START_GAP, CANVAS_HEIGHT / 2, 0));
-  const positionedForWindow = useRef(false);
 
   const controls1 = useKeyboardControls('player1');
   const controls2 = useKeyboardControls('player2');
@@ -42,17 +41,9 @@ export default function GameCanvas() {
     const update = () => {
       const w = window.innerWidth;
       const h = window.innerHeight;
-      if (!positionedForWindow.current) {
-        const startingRockets = createStartingRockets(w, h);
-        rocket1.current = startingRockets.rocket1;
-        rocket2.current = startingRockets.rocket2;
-        positionedForWindow.current = true;
-      }
-      // wrap rocket positions into new bounds on resize
-      rocket1.current.x = ((rocket1.current.x % w) + w) % w;
-      rocket1.current.y = ((rocket1.current.y % h) + h) % h;
-      rocket2.current.x = ((rocket2.current.x % w) + w) % w;
-      rocket2.current.y = ((rocket2.current.y % h) + h) % h;
+      const { rocket1: r1, rocket2: r2 } = createStartingRockets(w, h);
+      rocket1.current = r1;
+      rocket2.current = r2;
       setWindowSize({ width: w, height: h });
     };
     update();
