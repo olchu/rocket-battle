@@ -1,7 +1,6 @@
 import { useEffect } from 'react'
 import { Rocket } from '@/entities/rocket/model/Rocket'
 import { Bullet } from '@/entities/bullet/model/Bullet'
-import { CANVAS_HEIGHT, CANVAS_WIDTH } from '@/shared/constants'
 
 type UseGameLoopParams = {
   rocket: React.MutableRefObject<Rocket>
@@ -40,6 +39,8 @@ export function useGameLoop({
 
       const r = rocket.current
       const keys = controls.current
+      const w = window.innerWidth
+      const h = window.innerHeight
       const maxSpeed = 5
 
       if (keys.left) r.rotateLeft()
@@ -61,10 +62,10 @@ export function useGameLoop({
       r.y += Math.sin(rad) * velocity.current
 
       // wrap
-      if (r.x < 0) r.x = CANVAS_WIDTH
-      if (r.x > CANVAS_WIDTH) r.x = 0
-      if (r.y < 0) r.y = CANVAS_HEIGHT
-      if (r.y > CANVAS_HEIGHT) r.y = 0
+      if (r.x < 0) r.x = w
+      if (r.x > w) r.x = 0
+      if (r.y < 0) r.y = h
+      if (r.y > h) r.y = 0
 
       if (keys.fire && !spacePressed.current) {
         spacePressed.current = true

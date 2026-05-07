@@ -1,6 +1,6 @@
 'use client';
 
-import { useEffect, useRef, useState } from 'react';
+import { useCallback, useEffect, useRef, useState } from 'react';
 import { Sprite, Stage } from '@pixi/react';
 import { Rocket } from '@/entities/rocket/model/Rocket';
 import { RocketView } from '@/entities/rocket/ui/RocketView';
@@ -11,14 +11,22 @@ import { useGameLoop } from '@/features/game-loop/useGameLoop';
 import { CANVAS_HEIGHT, CANVAS_WIDTH } from '@/shared/constants';
 import { HealthBar } from '@/shared/ui/HealthBar';
 
+const START_GAP = 75;
+
+const createStartingRockets = (width: number, height: number) => ({
+  rocket1: new Rocket(width / 2 - START_GAP, height / 2, 180),
+  rocket2: new Rocket(width / 2 + START_GAP, height / 2, 0),
+});
+
 export default function GameCanvas() {
   const [tick, forceUpdate] = useState(0);
   const [gameOver, setGameOver] = useState(false);
   const [winner, setWinner] = useState<'Player 1' | 'Player 2' | null>(null);
-  const [scale, setScale] = useState(1);
+  const [windowSize, setWindowSize] = useState({ width: CANVAS_WIDTH, height: CANVAS_HEIGHT });
 
-  const rocket1 = useRef(new Rocket(200, CANVAS_HEIGHT / 2, 0));
-  const rocket2 = useRef(new Rocket(CANVAS_WIDTH - 200, CANVAS_HEIGHT / 2, 180));
+  const rocket1 = useRef(new Rocket(CANVAS_WIDTH / 2 - START_GAP, CANVAS_HEIGHT / 2, 180));
+  const rocket2 = useRef(new Rocket(CANVAS_WIDTH / 2 + START_GAP, CANVAS_HEIGHT / 2, 0));
+  const positionedForWindow = useRef(false);
 
   const controls1 = useKeyboardControls('player1');
   const controls2 = useKeyboardControls('player2');
@@ -31,17 +39,29 @@ export default function GameCanvas() {
   const spacePressed2 = useRef(false);
 
   useEffect(() => {
-    const updateScale = () => {
-      const scaleX = window.innerWidth / CANVAS_WIDTH;
-      const scaleY = window.innerHeight / CANVAS_HEIGHT;
-      setScale(Math.min(scaleX, scaleY));
+    const update = () => {
+      const w = window.innerWidth;
+      const h = window.innerHeight;
+      if (!positionedForWindow.current) {
+        const startingRockets = createStartingRockets(w, h);
+        rocket1.current = startingRockets.rocket1;
+        rocket2.current = startingRockets.rocket2;
+        positionedForWindow.current = true;
+      }
+      // wrap rocket positions into new bounds on resize
+      rocket1.current.x = ((rocket1.current.x % w) + w) % w;
+      rocket1.current.y = ((rocket1.current.y % h) + h) % h;
+      rocket2.current.x = ((rocket2.current.x % w) + w) % w;
+      rocket2.current.y = ((rocket2.current.y % h) + h) % h;
+      setWindowSize({ width: w, height: h });
     };
-    updateScale();
-    window.addEventListener('resize', updateScale);
-    return () => window.removeEventListener('resize', updateScale);
+    update();
+    window.addEventListener('resize', update);
+    return () => window.removeEventListener('resize', update);
   }, []);
 
-  const checkHealth = () => {
+
+  const checkHealth = useCallback(() => {
     if (rocket1.current.health <= 0) {
       setGameOver(true);
       setWinner('Player 2');
@@ -49,11 +69,12 @@ export default function GameCanvas() {
       setGameOver(true);
       setWinner('Player 1');
     }
-  };
+  }, []);
 
   const restartGame = () => {
-    rocket1.current = new Rocket(200, CANVAS_HEIGHT / 2, 0);
-    rocket2.current = new Rocket(CANVAS_WIDTH - 200, CANVAS_HEIGHT / 2, 180);
+    const startingRockets = createStartingRockets(windowSize.width, windowSize.height);
+    rocket1.current = startingRockets.rocket1;
+    rocket2.current = startingRockets.rocket2;
     bullets1.current = [];
     bullets2.current = [];
     velocity1.current = 0;
@@ -87,38 +108,29 @@ export default function GameCanvas() {
   });
 
   return (
-    <div className="relative w-full h-full overflow-hidden">
-      <div
-        style={{
-          position: 'absolute',
-          left: '50%',
-          top: '50%',
-          transform: `translate(-50%, -50%) scale(${scale})`,
-          transformOrigin: 'center center',
-        }}
+    <div className="fixed inset-0">
+      <Stage
+        width={windowSize.width}
+        height={windowSize.height}
+        options={{ backgroundColor: 0x111111 }}
+        style={{ display: 'block' }}
       >
-        <Stage
-          width={CANVAS_WIDTH}
-          height={CANVAS_HEIGHT}
-          options={{ backgroundColor: 0x111111 }}
-        >
-          <Sprite
-            image="/space.png"
-            x={0}
-            y={0}
-            width={CANVAS_WIDTH}
-            height={CANVAS_HEIGHT}
-          />
-          <RocketView rocket={rocket1.current} image="/rocket.png" />
-          <RocketView rocket={rocket2.current} image="/rocket.png" />
-          {bullets1.current.map((b, i) => (
-            <BulletView key={`b1-${i}`} bullet={b} />
-          ))}
-          {bullets2.current.map((b, i) => (
-            <BulletView key={`b2-${i}`} bullet={b} />
-          ))}
-        </Stage>
-      </div>
+        <Sprite
+          image="/space.png"
+          x={0}
+          y={0}
+          width={windowSize.width}
+          height={windowSize.height}
+        />
+        <RocketView rocket={rocket1.current} image="/rocket.png" />
+        <RocketView rocket={rocket2.current} image="/rocket.png" />
+        {bullets1.current.map((b, i) => (
+          <BulletView key={`b1-${i}`} bullet={b} />
+        ))}
+        {bullets2.current.map((b, i) => (
+          <BulletView key={`b2-${i}`} bullet={b} />
+        ))}
+      </Stage>
 
       <div className="absolute top-4 left-4 right-4 z-10">
         <HealthBar

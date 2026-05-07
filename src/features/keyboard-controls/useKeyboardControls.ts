@@ -13,18 +13,18 @@ const keyMappings: Record<
   Record<string, Partial<ControlState>>
 > = {
   player1: {
+    KeyW: { up: true },
+    KeyS: { down: true },
+    KeyA: { left: true },
+    KeyD: { right: true },
+    KeyF: { fire: true },
+  },
+  player2: {
     ArrowUp: { up: true },
     ArrowDown: { down: true },
     ArrowLeft: { left: true },
     ArrowRight: { right: true },
-    ' ': { fire: true },
-  },
-  player2: {
-    w: { up: true },
-    s: { down: true },
-    a: { left: true },
-    d: { right: true },
-    f: { fire: true },
+    Space: { fire: true },
   },
 };
 
@@ -40,7 +40,7 @@ export function useKeyboardControls(player: 'player1' | 'player2') {
   useEffect(() => {
     const handle = (e: KeyboardEvent, isDown: boolean) => {
       const mapping = keyMappings[player];
-      const config = mapping[e.key];
+      const config = mapping[e.code];
       if (config) {
         Object.keys(config).forEach((key) => {
           state.current[key as keyof ControlState] = isDown;
