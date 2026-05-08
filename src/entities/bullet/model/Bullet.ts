@@ -10,7 +10,7 @@ export class Bullet {
     this.x = x
     this.y = y
     this.angle = angle
-    this.speed = 8
+    this.speed = 16
     this.radius = 3
     this.isAlive = true
   }
