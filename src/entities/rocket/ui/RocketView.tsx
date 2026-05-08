@@ -28,9 +28,15 @@ const EXPLOSION_SPRITES = [
 const ANIMATION_SPEED = 100
 const EXPLOSION_PARTICLES = 20
 
+const ALL_PRELOAD_ASSETS = [...FIRE_ANIMATION_FRAMES, ...EXPLOSION_SPRITES]
+
 export function RocketView({ rocketRef, health, image }: Props) {
   const containerRef = useRef<PIXI.Container>(null)
   const [fireFrame, setFireFrame] = useState(0)
+
+  useEffect(() => {
+    PIXI.Assets.load(ALL_PRELOAD_ASSETS).catch(() => {})
+  }, [])
   const [particles, setParticles] = useState<Array<{
     id: number
     angle: number

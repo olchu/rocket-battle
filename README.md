@@ -1,3 +1,5 @@
+<img src="public/main game.png" alt="Rocket Battle" width="100%" />
+
 # 🚀 Rocket Battle
 
 > Two players. One screen. No mercy.
@@ -8,7 +10,7 @@ You can play the game and see how it works here: [https://rocket-battle.vercel.a
 
 ---
 
-![Main Menu](docs/preview.png)
+![Gameplay](public/gameplay.png)
 
 ---
 
