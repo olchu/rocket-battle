@@ -12,17 +12,17 @@ export function MainMusic() {
     audio.volume = 0.17
     audioRef.current = audio
 
-    const tryPlay = () => audio.play().catch(() => {})
-
-    tryPlay()
-    window.addEventListener('pointerdown', tryPlay, { once: true })
-    window.addEventListener('keydown', tryPlay, { once: true })
+    // On trusted domains mousemove is enough to autoplay; on first visit falls back to button
+    const tryOnMove = () => {
+      window.removeEventListener('mousemove', tryOnMove)
+      audio.play().catch(() => {})
+    }
+    window.addEventListener('mousemove', tryOnMove)
 
     return () => {
       audio.pause()
       audio.src = ''
-      window.removeEventListener('pointerdown', tryPlay)
-      window.removeEventListener('keydown', tryPlay)
+      window.removeEventListener('mousemove', tryOnMove)
     }
   }, [])
 
@@ -30,10 +30,11 @@ export function MainMusic() {
     const audio = audioRef.current
     if (!audio) return
     if (muted) {
-      audio.volume = 0.17
+      // onClick is a real user gesture — browser always allows this
+      audio.play().catch(() => {})
       setMuted(false)
     } else {
-      audio.volume = 0
+      audio.pause()
       setMuted(true)
     }
   }

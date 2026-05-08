@@ -9,6 +9,7 @@ interface Props {
 export function MuteButton({ muted, onToggle, top = '16px' }: Props) {
   return (
     <button
+      data-mute
       onClick={onToggle}
       title={muted ? 'Включить музыку' : 'Выключить музыку'}
       style={{
