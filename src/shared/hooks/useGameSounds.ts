@@ -123,5 +123,11 @@ export function useGameSounds() {
     musicPlaying.current = false
   }
 
-  return { setThrust1, setThrust2, playShoot, playHit, playBoom, playMusic, stopMusic, stopAll }
+  const setMusicMuted = (muted: boolean) => {
+    const a = musicAudio.current
+    if (!a) return
+    a.volume = muted ? 0 : 0.2
+  }
+
+  return { setThrust1, setThrust2, playShoot, playHit, playBoom, playMusic, stopMusic, setMusicMuted, stopAll }
 }

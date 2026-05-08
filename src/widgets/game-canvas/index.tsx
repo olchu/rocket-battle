@@ -11,6 +11,7 @@ import { useGameLoop } from '@/features/game-loop/useGameLoop';
 import { CANVAS_HEIGHT, CANVAS_WIDTH } from '@/shared/constants';
 import { HealthBar } from '@/shared/ui/HealthBar';
 import { useGameSounds } from '@/shared/hooks/useGameSounds';
+import { MuteButton } from '@/shared/ui/MuteButton';
 
 const START_GAP = 75;
 
@@ -233,6 +234,13 @@ export default function GameCanvas() {
   };
 
   const sounds = useGameSounds();
+  const [musicMuted, setMusicMuted] = useState(false);
+
+  const toggleMusicMute = () => {
+    const next = !musicMuted;
+    setMusicMuted(next);
+    sounds.setMusicMuted(next);
+  };
 
   useEffect(() => {
     if (countdown === null && !gameOver) {
@@ -330,6 +338,8 @@ export default function GameCanvas() {
           </div>
         </div>
       )}
+
+      <MuteButton muted={musicMuted} onToggle={toggleMusicMute} top="72px" />
     </div>
   );
 }

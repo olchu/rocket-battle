@@ -1,8 +1,10 @@
 'use client'
-import { useEffect, useRef } from 'react'
+import { useEffect, useRef, useState } from 'react'
+import { MuteButton } from './MuteButton'
 
 export function MainMusic() {
   const audioRef = useRef<HTMLAudioElement | null>(null)
+  const [muted, setMuted] = useState(false)
 
   useEffect(() => {
     const audio = new Audio('/sounds/main_muz.mp3')
@@ -10,21 +12,31 @@ export function MainMusic() {
     audio.volume = 0.17
     audioRef.current = audio
 
-    const EVENTS = ['mouseenter', 'mousemove', 'keydown', 'click'] as const
-    const start = () => {
-      audio.play().catch(() => {})
-      EVENTS.forEach(e => window.removeEventListener(e, start))
-    }
+    const tryPlay = () => audio.play().catch(() => {})
 
-    audio.play().catch(() => {
-      EVENTS.forEach(e => window.addEventListener(e, start, { once: true }))
-    })
+    tryPlay()
+    window.addEventListener('pointerdown', tryPlay, { once: true })
+    window.addEventListener('keydown', tryPlay, { once: true })
 
     return () => {
       audio.pause()
       audio.src = ''
+      window.removeEventListener('pointerdown', tryPlay)
+      window.removeEventListener('keydown', tryPlay)
     }
   }, [])
 
-  return null
+  const toggle = () => {
+    const audio = audioRef.current
+    if (!audio) return
+    if (muted) {
+      audio.volume = 0.17
+      setMuted(false)
+    } else {
+      audio.volume = 0
+      setMuted(true)
+    }
+  }
+
+  return <MuteButton muted={muted} onToggle={toggle} />
 }
