@@ -1,11 +1,11 @@
 'use client';
 
-import { useCallback, useEffect, useRef, useState } from 'react';
-import { Sprite, Stage } from '@pixi/react';
+import { MutableRefObject, useCallback, useEffect, useRef, useState } from 'react';
+import { Container, Sprite, Stage, useTick } from '@pixi/react';
+import * as PIXI from 'pixi.js';
 import { Rocket } from '@/entities/rocket/model/Rocket';
 import { RocketView } from '@/entities/rocket/ui/RocketView';
 import { Bullet } from '@/entities/bullet/model/Bullet';
-import { BulletView } from '@/entities/bullet/ui/BulletView';
 import { useKeyboardControls } from '@/features/keyboard-controls/useKeyboardControls';
 import { useGameLoop } from '@/features/game-loop/useGameLoop';
 import { CANVAS_HEIGHT, CANVAS_WIDTH } from '@/shared/constants';
@@ -56,14 +56,106 @@ const createStartingRockets = (width: number, height: number) => ({
   rocket2: new Rocket(width / 2 + START_GAP, height / 2, 0),
 });
 
+// Планеты — полностью внутри PixiJS, без React re-render
+function PlanetsLayer() {
+  const containerRef = useRef<PIXI.Container>(null);
+  const planetsRef = useRef<Planet[]>([]);
+  const spritesRef = useRef<PIXI.Sprite[]>([]);
+
+  useEffect(() => {
+    const container = containerRef.current;
+    if (!container) return;
+    const planets = createPlanets(window.innerWidth, window.innerHeight);
+    planetsRef.current = planets;
+    planets.forEach((p) => {
+      const sprite = PIXI.Sprite.from(p.image);
+      sprite.anchor.set(0.5);
+      sprite.scale.set(p.scale);
+      sprite.x = p.x;
+      sprite.y = p.y;
+      container.addChild(sprite);
+      spritesRef.current.push(sprite);
+    });
+    return () => {
+      spritesRef.current.forEach((s) => s.destroy());
+      spritesRef.current = [];
+    };
+  }, []);
+
+  useTick((delta) => {
+    const w = window.innerWidth;
+    const h = window.innerHeight;
+    planetsRef.current.forEach((p, i) => {
+      p.x += p.vx * delta;
+      p.y += p.vy * delta;
+      const half = p.scale * 700;
+      if (p.x > w + half || p.x < -half || p.y > h + half || p.y < -half) {
+        spawnOffScreen(p, w, h);
+      }
+      const sprite = spritesRef.current[i];
+      if (sprite) {
+        sprite.x = p.x;
+        sprite.y = p.y;
+      }
+    });
+  });
+
+  return <Container ref={containerRef} />;
+}
+
+// Пули — полностью внутри PixiJS, без React re-render
+function BulletsLayer({ bulletsRef }: { bulletsRef: MutableRefObject<Bullet[]> }) {
+  const containerRef = useRef<PIXI.Container>(null);
+
+  useTick(() => {
+    const container = containerRef.current;
+    if (!container) return;
+    const bullets = bulletsRef.current;
+
+    while (container.children.length < bullets.length) {
+      const g = new PIXI.Graphics();
+      g.beginFill(0xffff00);
+      g.drawCircle(0, 0, 3);
+      g.endFill();
+      container.addChild(g);
+    }
+    while (container.children.length > bullets.length) {
+      const child = container.removeChildAt(container.children.length - 1);
+      (child as PIXI.Graphics).destroy();
+    }
+    bullets.forEach((b, i) => {
+      const child = container.children[i] as PIXI.Container;
+      child.x = b.x;
+      child.y = b.y;
+    });
+  });
+
+  return <Container ref={containerRef} />;
+}
+
+// Игровая логика через PixiJS тикер — без React re-render
+function GameTick({ tick1, tick2, gameActiveRef }: {
+  tick1: (delta: number) => void;
+  tick2: (delta: number) => void;
+  gameActiveRef: MutableRefObject<boolean>;
+}) {
+  useTick((delta) => {
+    if (gameActiveRef.current) {
+      tick1(delta);
+      tick2(delta);
+    }
+  });
+  return null;
+}
+
 export default function GameCanvas() {
-  const [tick, forceUpdate] = useState(0);
   const [gameOver, setGameOver] = useState(false);
   const [winner, setWinner] = useState<'Player 1' | 'Player 2' | null>(null);
   const [windowSize, setWindowSize] = useState({ width: CANVAS_WIDTH, height: CANVAS_HEIGHT });
   const [countdown, setCountdown] = useState<number | 'GO!' | null>(null);
+  const [health1, setHealth1] = useState(100);
+  const [health2, setHealth2] = useState(100);
   const countdownTimers = useRef<ReturnType<typeof setTimeout>[]>([]);
-  const planets = useRef<Planet[]>([]);
 
   const rocket1 = useRef(new Rocket(CANVAS_WIDTH / 2 - START_GAP, CANVAS_HEIGHT / 2, 180));
   const rocket2 = useRef(new Rocket(CANVAS_WIDTH / 2 + START_GAP, CANVAS_HEIGHT / 2, 0));
@@ -90,12 +182,6 @@ export default function GameCanvas() {
   }, []);
 
   useEffect(() => {
-    const w = window.innerWidth;
-    const h = window.innerHeight;
-    planets.current = createPlanets(w, h);
-  }, []);
-
-  useEffect(() => {
     const update = () => {
       const w = window.innerWidth;
       const h = window.innerHeight;
@@ -115,25 +201,31 @@ export default function GameCanvas() {
   }, [startCountdown]);
 
   const checkHealth = useCallback(() => {
-    if (rocket1.current.health <= 0) {
+    const h1 = rocket1.current.health;
+    const h2 = rocket2.current.health;
+    setHealth1(h1);
+    setHealth2(h2);
+    if (h1 <= 0) {
       setGameOver(true);
       setWinner('Player 2');
-    } else if (rocket2.current.health <= 0) {
+    } else if (h2 <= 0) {
       setGameOver(true);
       setWinner('Player 1');
     }
   }, []);
 
   const restartGame = () => {
-    const startingRockets = createStartingRockets(windowSize.width, windowSize.height);
-    rocket1.current = startingRockets.rocket1;
-    rocket2.current = startingRockets.rocket2;
+    const { rocket1: r1, rocket2: r2 } = createStartingRockets(windowSize.width, windowSize.height);
+    rocket1.current = r1;
+    rocket2.current = r2;
     bullets1.current = [];
     bullets2.current = [];
     velocity1.current = 0;
     velocity2.current = 0;
     setGameOver(false);
     setWinner(null);
+    setHealth1(100);
+    setHealth2(100);
     startCountdown();
   };
 
@@ -160,40 +252,6 @@ export default function GameCanvas() {
     onHit: checkHealth,
   });
 
-  useEffect(() => {
-    let frame: number;
-    let lastTime: number | null = null;
-
-    const loop = (timestamp: number) => {
-      const dt = lastTime !== null ? Math.min(timestamp - lastTime, 50) : 16.667;
-      lastTime = timestamp;
-      const scale = dt / 16.667;
-
-      const w = window.innerWidth;
-      const h = window.innerHeight;
-
-      planets.current.forEach((p) => {
-        p.x += p.vx * scale;
-        p.y += p.vy * scale;
-        const half = p.scale * 700;
-        if (p.x > w + half || p.x < -half || p.y > h + half || p.y < -half) {
-          spawnOffScreen(p, w, h);
-        }
-      });
-
-      if (gameActiveRef.current) {
-        tick1(scale);
-        tick2(scale);
-      }
-
-      forceUpdate((n) => n + 1);
-      frame = requestAnimationFrame(loop);
-    };
-
-    frame = requestAnimationFrame(loop);
-    return () => cancelAnimationFrame(frame);
-  }, [tick1, tick2]);
-
   return (
     <div className="fixed inset-0">
       <Stage
@@ -209,32 +267,16 @@ export default function GameCanvas() {
           width={windowSize.width}
           height={windowSize.height}
         />
-        {planets.current.map((p, i) => (
-          <Sprite
-            key={`planet-${i}`}
-            image={p.image}
-            x={p.x}
-            y={p.y}
-            scale={p.scale}
-            anchor={0.5}
-            alpha={p.alpha}
-          />
-        ))}
-        <RocketView rocket={rocket1.current} image="/rocket.png" />
-        <RocketView rocket={rocket2.current} image="/rocket.png" />
-        {bullets1.current.map((b, i) => (
-          <BulletView key={`b1-${i}`} bullet={b} />
-        ))}
-        {bullets2.current.map((b, i) => (
-          <BulletView key={`b2-${i}`} bullet={b} />
-        ))}
+        <PlanetsLayer />
+        <GameTick tick1={tick1} tick2={tick2} gameActiveRef={gameActiveRef} />
+        <RocketView rocketRef={rocket1} health={health1} image="/rocket.png" />
+        <RocketView rocketRef={rocket2} health={health2} image="/rocket.png" />
+        <BulletsLayer bulletsRef={bullets1} />
+        <BulletsLayer bulletsRef={bullets2} />
       </Stage>
 
       <div className="absolute top-4 left-4 right-4 z-10">
-        <HealthBar
-          player1Health={rocket1.current.health}
-          player2Health={rocket2.current.health}
-        />
+        <HealthBar player1Health={health1} player2Health={health2} />
       </div>
 
       {countdown !== null && (

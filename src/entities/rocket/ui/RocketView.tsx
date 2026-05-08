@@ -1,12 +1,13 @@
 'use client'
-import { Sprite, Graphics, Container } from '@pixi/react'
+import { Sprite, Container, useTick } from '@pixi/react'
+import * as PIXI from 'pixi.js'
+import { MutableRefObject, useCallback, useState, useEffect, useRef } from 'react'
 import { Rocket } from '../model/Rocket'
-import { useCallback, useState, useEffect } from 'react'
-import { COLLISION_RADIUS_MULTIPLIER, COLLISION_OFFSET_X } from '@/shared/constants'
 import { ExplosionParticle } from './ExplosionParticle'
 
 interface Props {
-  rocket: Rocket
+  rocketRef: MutableRefObject<Rocket>
+  health: number
   image: string
 }
 
@@ -15,109 +16,89 @@ const FIRE_ANIMATION_FRAMES = [
   '/rocket-fire-2.png',
   '/rocket-fire-3.png',
   '/rocket-fire-4.png',
-];
+]
 
-// Спрайты для частиц взрыва
 const EXPLOSION_SPRITES = [
-  '/debris-1.png', // Кусок корпуса
-  '/debris-2.png', // Часть крыла
-  '/debris-3.png', // Часть двигателя
-  '/debris-4.png', // Мелкий обломок
-];
+  '/debris-1.png',
+  '/debris-2.png',
+  '/debris-3.png',
+  '/debris-4.png',
+]
 
-const ANIMATION_SPEED = 100; // миллисекунды между кадрами
+const ANIMATION_SPEED = 100
+const EXPLOSION_PARTICLES = 20
 
-// Количество частиц при взрыве
-const EXPLOSION_PARTICLES = 20;
-
-export function RocketView({ rocket, image }: Props) {
-  const [fireFrame, setFireFrame] = useState(0);
+export function RocketView({ rocketRef, health, image }: Props) {
+  const containerRef = useRef<PIXI.Container>(null)
+  const [fireFrame, setFireFrame] = useState(0)
   const [particles, setParticles] = useState<Array<{
-    id: number;
-    angle: number;
-    speed: number;
-    rotationSpeed: number;
-    sprite: string;
-  }>>([]);
-  const [isExploded, setIsExploded] = useState(false);
+    id: number
+    angle: number
+    speed: number
+    rotationSpeed: number
+    sprite: string
+  }>>([])
+  const [isExploded, setIsExploded] = useState(false)
+  const fireTimeRef = useRef(0)
 
-  // Сброс состояния взрыва при восстановлении здоровья (перезапуск)
-  useEffect(() => {
-    if (rocket.health === 100) {
-      setIsExploded(false);
-      setParticles([]);
+  // Обновляем позицию напрямую через PixiJS — без React re-render
+  useTick((delta) => {
+    const r = rocketRef.current
+    const container = containerRef.current
+    if (container) {
+      container.x = r.x
+      container.y = r.y
+      container.rotation = r.angle * (Math.PI / 180)
     }
-  }, [rocket.health]);
 
-  // Проверяем здоровье для создания эффекта взрыва
+    // Анимация огня через тикер
+    if (r.isMovingForward) {
+      fireTimeRef.current += delta * (1000 / 60)
+      if (fireTimeRef.current >= ANIMATION_SPEED) {
+        fireTimeRef.current = 0
+        setFireFrame((prev) => (prev + 1) % FIRE_ANIMATION_FRAMES.length)
+      }
+    } else if (fireTimeRef.current > 0) {
+      fireTimeRef.current = 0
+      setFireFrame(0)
+    }
+  })
+
   useEffect(() => {
-    if (rocket.health <= 0 && !isExploded) {
-      // Создаем частицы только при полном уничтожении
+    if (health === 100) {
+      setIsExploded(false)
+      setParticles([])
+    }
+  }, [health])
+
+  useEffect(() => {
+    if (health <= 0 && !isExploded) {
       const newParticles = Array.from({ length: EXPLOSION_PARTICLES }, (_, i) => ({
         id: Date.now() + i,
         angle: (360 / EXPLOSION_PARTICLES) * i + Math.random() * 30 - 15,
         speed: 3 + Math.random() * 4,
         rotationSpeed: (Math.random() - 0.5) * 0.4,
-        // Выбираем случайный спрайт из доступных
         sprite: EXPLOSION_SPRITES[Math.floor(Math.random() * EXPLOSION_SPRITES.length)],
-      }));
-      setParticles(newParticles);
-      setIsExploded(true);
+      }))
+      setParticles(newParticles)
+      setIsExploded(true)
     }
-  }, [rocket.health, isExploded]);
-
-  // Анимация огня
-  useEffect(() => {
-    // Сбрасываем на первый кадр при остановке или старте движения
-    if (!rocket.isMovingForward) {
-      setFireFrame(0);
-      return;
-    }
-
-    const interval = setInterval(() => {
-      setFireFrame((prev) => (prev + 1) % FIRE_ANIMATION_FRAMES.length);
-    }, ANIMATION_SPEED);
-
-    return () => clearInterval(interval);
-  }, [rocket.isMovingForward]);
-
-  // Функция для отрисовки отладочной рамки
-  const drawDebugBorder = useCallback((g: any) => {
-    g.clear();
-    
-    // Рисуем основную рамку ракеты
-    g.lineStyle(2, 0xFF0000, 1);
-    g.drawRect(-rocket.width / 2, -rocket.height / 2, rocket.width, rocket.height);
-    
-    // Рисуем центр ракеты
-    g.lineStyle(0);
-    g.beginFill(0xFF0000);
-    g.drawCircle(0, 0, 3);
-    g.endFill();
-    
-    // Рисуем фиксированную круглую область столкновения
-    g.lineStyle(1, 0x00FF00, 0.5);
-    const collisionRadius = Math.max(rocket.width, rocket.height) * COLLISION_RADIUS_MULTIPLIER;
-    g.drawCircle(COLLISION_OFFSET_X, 0, collisionRadius);
-  }, [rocket.width, rocket.height]);
-
-  // Определяем какой спрайт использовать
-  const rocketImage = rocket.isMovingForward 
-    ? FIRE_ANIMATION_FRAMES[fireFrame]
-    : image;
+  }, [health, isExploded])
 
   const removeParticle = useCallback((id: number) => {
-    setParticles(prev => prev.filter(p => p.id !== id));
-  }, []);
+    setParticles((prev) => prev.filter((p) => p.id !== id))
+  }, [])
+
+  const r = rocketRef.current
+  const rocketImage = r.isMovingForward ? FIRE_ANIMATION_FRAMES[fireFrame] : image
 
   return (
     <>
-      {/* Частицы взрыва */}
-      {particles.map(particle => (
+      {particles.map((particle) => (
         <ExplosionParticle
           key={particle.id}
-          x={rocket.x}
-          y={rocket.y}
+          x={r.x}
+          y={r.y}
           angle={particle.angle}
           speed={particle.speed}
           rotationSpeed={particle.rotationSpeed}
@@ -125,24 +106,14 @@ export function RocketView({ rocket, image }: Props) {
           onComplete={() => removeParticle(particle.id)}
         />
       ))}
-      
-      {/* Ракета (показываем только если не взорвана) */}
       {!isExploded && (
         <Container
-          x={rocket.x}
-          y={rocket.y}
-          rotation={(rocket.angle * Math.PI) / 180}
-          anchor={0.5}
+          ref={containerRef}
+          x={r.x}
+          y={r.y}
+          rotation={(r.angle * Math.PI) / 180}
         >
-          {/* Отладочная рамка */}
-          {/* <Graphics draw={drawDebugBorder} /> */}
-          
-          <Sprite
-            image={rocketImage}
-            width={rocket.width}
-            height={rocket.height}
-            anchor={0.5}
-          />
+          <Sprite image={rocketImage} width={r.width} height={r.height} anchor={0.5} />
         </Container>
       )}
     </>
