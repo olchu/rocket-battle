@@ -2,7 +2,7 @@
 import { useEffect, useRef, useState } from 'react'
 import { MuteButton } from './MuteButton'
 
-export function MainMusic() {
+export function MainMusic({ autoPlay }: { autoPlay?: boolean }) {
   const audioRef = useRef<HTMLAudioElement | null>(null)
   const [muted, setMuted] = useState(false)
 
@@ -12,19 +12,21 @@ export function MainMusic() {
     audio.volume = 0.17
     audioRef.current = audio
 
-    // On trusted domains mousemove is enough to autoplay; on first visit falls back to button
-    const tryOnMove = () => {
-      window.removeEventListener('mousemove', tryOnMove)
+    if (autoPlay) {
       audio.play().catch(() => {})
+    } else {
+      const tryOnMove = () => {
+        window.removeEventListener('mousemove', tryOnMove)
+        audio.play().catch(() => {})
+      }
+      window.addEventListener('mousemove', tryOnMove)
     }
-    window.addEventListener('mousemove', tryOnMove)
 
     return () => {
       audio.pause()
       audio.src = ''
-      window.removeEventListener('mousemove', tryOnMove)
     }
-  }, [])
+  }, [autoPlay])
 
   const toggle = () => {
     const audio = audioRef.current

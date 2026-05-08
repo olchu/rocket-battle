@@ -1,11 +1,21 @@
+'use client';
+
+import { useState } from 'react';
 import Image from 'next/image';
 import { MainMusic } from '@/shared/ui/MainMusic';
 import { StartButton } from '@/shared/ui/StartButton';
+import { LoadingScreen } from '@/shared/ui/LoadingScreen';
 
 export default function Home() {
+  const [ready, setReady] = useState(false);
+
+  if (!ready) {
+    return <LoadingScreen onReady={() => setReady(true)} />;
+  }
+
   return (
     <>
-    <MainMusic />
+    <MainMusic autoPlay />
     <main
       className="min-h-screen flex flex-col items-center justify-center px-6 py-10 text-white overflow-hidden relative"
       style={{ backgroundImage: 'url(/bg.png)', backgroundSize: 'cover', backgroundPosition: 'center' }}

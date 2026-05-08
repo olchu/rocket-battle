@@ -52,3 +52,9 @@ body {
 .planet-float-1 { animation: floatPlanet 10s ease-in-out infinite; }
 .planet-float-2 { animation: floatPlanet 12s ease-in-out infinite 2s; }
 .planet-float-3 { animation: floatPlanet 11s ease-in-out infinite 1s; }
+
+@keyframes readyPop {
+  0%   { transform: scale(0.6); opacity: 0; }
+  60%  { transform: scale(1.08); opacity: 1; }
+  100% { transform: scale(1); opacity: 1; }
+}
