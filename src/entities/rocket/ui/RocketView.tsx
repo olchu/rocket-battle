@@ -33,6 +33,7 @@ const ALL_PRELOAD_ASSETS = [...FIRE_ANIMATION_FRAMES, ...EXPLOSION_SPRITES]
 export function RocketView({ rocketRef, health, image }: Props) {
   const containerRef = useRef<PIXI.Container>(null)
   const [fireFrame, setFireFrame] = useState(0)
+  const [isFiring, setIsFiring] = useState(false)
 
   useEffect(() => {
     PIXI.Assets.load(ALL_PRELOAD_ASSETS).catch(() => {})
@@ -46,8 +47,8 @@ export function RocketView({ rocketRef, health, image }: Props) {
   }>>([])
   const [isExploded, setIsExploded] = useState(false)
   const fireTimeRef = useRef(0)
+  const wasMovingRef = useRef(false)
 
-  // Обновляем позицию напрямую через PixiJS — без React re-render
   useTick((delta) => {
     const r = rocketRef.current
     const container = containerRef.current
@@ -57,16 +58,21 @@ export function RocketView({ rocketRef, health, image }: Props) {
       container.rotation = r.angle * (Math.PI / 180)
     }
 
-    // Анимация огня через тикер
     if (r.isMovingForward) {
+      if (!wasMovingRef.current) {
+        wasMovingRef.current = true
+        setIsFiring(true)
+      }
       fireTimeRef.current += delta * (1000 / 60)
       if (fireTimeRef.current >= ANIMATION_SPEED) {
         fireTimeRef.current = 0
         setFireFrame((prev) => (prev + 1) % FIRE_ANIMATION_FRAMES.length)
       }
-    } else if (fireTimeRef.current > 0) {
+    } else if (wasMovingRef.current) {
+      wasMovingRef.current = false
       fireTimeRef.current = 0
       setFireFrame(0)
+      setIsFiring(false)
     }
   })
 
@@ -96,7 +102,7 @@ export function RocketView({ rocketRef, health, image }: Props) {
   }, [])
 
   const r = rocketRef.current
-  const rocketImage = r.isMovingForward ? FIRE_ANIMATION_FRAMES[fireFrame] : image
+  const rocketImage = isFiring ? FIRE_ANIMATION_FRAMES[fireFrame] : image
 
   return (
     <>

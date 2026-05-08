@@ -207,9 +207,11 @@ export default function GameCanvas() {
     setHealth1(h1);
     setHealth2(h2);
     if (h1 <= 0) {
+      sounds.playBoom();
       setGameOver(true);
       setWinner('Player 2');
     } else if (h2 <= 0) {
+      sounds.playBoom();
       setGameOver(true);
       setWinner('Player 1');
     }
