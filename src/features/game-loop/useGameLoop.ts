@@ -16,6 +16,9 @@ type UseGameLoopParams = {
   }>
   spacePressed: React.MutableRefObject<boolean>
   onHit?: () => void
+  onThrust?: (active: boolean) => void
+  onShoot?: () => void
+  onHitSound?: () => void
 }
 
 export function useGameLoop({
@@ -26,9 +29,18 @@ export function useGameLoop({
   controls,
   spacePressed,
   onHit,
+  onThrust,
+  onShoot,
+  onHitSound,
 }: UseGameLoopParams) {
   const onHitRef = useRef(onHit)
   onHitRef.current = onHit
+  const onThrustRef = useRef(onThrust)
+  onThrustRef.current = onThrust
+  const onShootRef = useRef(onShoot)
+  onShootRef.current = onShoot
+  const onHitSoundRef = useRef(onHitSound)
+  onHitSoundRef.current = onHitSound
 
   return useCallback(
     (scale: number) => {
@@ -44,12 +56,15 @@ export function useGameLoop({
       if (keys.up) {
         velocity.current = Math.min(maxSpeed, velocity.current + 0.12 * scale)
         r.isMovingForward = true
+        onThrustRef.current?.(true)
       } else if (keys.down) {
         velocity.current = Math.max(0, velocity.current - 0.24 * scale)
         r.isMovingForward = false
+        onThrustRef.current?.(false)
       } else {
         velocity.current = Math.max(0, velocity.current - 0.06 * scale)
         r.isMovingForward = false
+        onThrustRef.current?.(false)
       }
 
       const rad = r.angle * (Math.PI / 180)
@@ -66,6 +81,7 @@ export function useGameLoop({
         const bx = r.x + Math.cos(rad) * (r.width / 2)
         const by = r.y + Math.sin(rad) * (r.width / 2)
         bullets.current.push(new Bullet(bx, by, r.angle))
+        onShootRef.current?.()
       }
 
       if (!keys.fire) spacePressed.current = false
@@ -78,6 +94,7 @@ export function useGameLoop({
           b.isAlive = false
           opponent.current.takeDamage(1)
           onHitRef.current?.()
+          onHitSoundRef.current?.()
         }
       })
     },

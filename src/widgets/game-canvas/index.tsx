@@ -10,6 +10,7 @@ import { useKeyboardControls } from '@/features/keyboard-controls/useKeyboardCon
 import { useGameLoop } from '@/features/game-loop/useGameLoop';
 import { CANVAS_HEIGHT, CANVAS_WIDTH } from '@/shared/constants';
 import { HealthBar } from '@/shared/ui/HealthBar';
+import { useGameSounds } from '@/shared/hooks/useGameSounds';
 
 const START_GAP = 75;
 
@@ -77,7 +78,7 @@ function PlanetsLayer() {
       spritesRef.current.push(sprite);
     });
     return () => {
-      spritesRef.current.forEach((s) => s.destroy());
+      spritesRef.current.forEach((s) => { try { s.destroy() } catch (_) {} });
       spritesRef.current = [];
     };
   }, []);
@@ -229,6 +230,16 @@ export default function GameCanvas() {
     startCountdown();
   };
 
+  const sounds = useGameSounds();
+
+  useEffect(() => {
+    if (countdown === null && !gameOver) {
+      sounds.playMusic();
+    } else {
+      sounds.stopMusic();
+    }
+  }, [countdown, gameOver]);
+
   const gameActiveRef = useRef(false);
   gameActiveRef.current = !gameOver && countdown === null;
 
@@ -240,6 +251,9 @@ export default function GameCanvas() {
     controls: controls1,
     spacePressed: spacePressed1,
     onHit: checkHealth,
+    onThrust: sounds.setThrust1,
+    onShoot: sounds.playShoot,
+    onHitSound: sounds.playHit,
   });
 
   const tick2 = useGameLoop({
@@ -250,6 +264,9 @@ export default function GameCanvas() {
     controls: controls2,
     spacePressed: spacePressed2,
     onHit: checkHealth,
+    onThrust: sounds.setThrust2,
+    onShoot: sounds.playShoot,
+    onHitSound: sounds.playHit,
   });
 
   return (
